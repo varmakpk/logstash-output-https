@@ -53,20 +53,18 @@ class LogStash::Outputs::Https < LogStash::Outputs::Base
     http = Net::HTTP.new(url.host, url.port)
 	http.use_ssl = true
 	http.verify_mode = OpenSSL::SSL::VERIFY_NONE
-	crtfullpath = "#{@crtfile}
-	keyfullpath = "#{@keyfile}
-	keyphraseplain = "#{@keyphrase}
-	http.cert = OpenSSL::X509::Certificate.new(File.read(crtfullpath))
-    http.key = OpenSSL::PKey::RSA.new(File.read(keyfullpath), keyphraseplain)
+
+	http.cert = OpenSSL::X509::Certificate.new(File.read("#{@crtfile}"))
+    http.key = OpenSSL::PKey::RSA.new(File.read("#{@keyfile}"), "#{@keyphrase}")
  
     request = Net::HTTP::Post.new(url.path)
     request.body = event.to_json
     response = http.request(request)
 
     if response.is_a?(Net::HTTPSuccess)
-      @logger.info("Event send to Loggly OK!")
+       @logger.info("Event send to Loggly OK!")
     else
-      @logger.warn("HTTP error", :error => response.error!)
+       @logger.warn("HTTP error", :error => response.error!)
     end
   end # def receive
 
